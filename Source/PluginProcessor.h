@@ -88,6 +88,11 @@ public:
 
     juce::AudioParameterFloat* overdriveSaturation = nullptr;
 
+    juce::AudioParameterChoice* ladderFilterMode= nullptr;
+    juce::AudioParameterFloat*  ladderFilterCutoff = nullptr;
+    juce::AudioParameterFloat*  ladderFilterResonance = nullptr;
+    juce::AudioParameterFloat*  ladderFilterDrive= nullptr;
+
 
 private:
     DSP_Order dspOrder;
