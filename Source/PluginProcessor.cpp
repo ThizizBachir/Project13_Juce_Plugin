@@ -42,17 +42,28 @@ Project13AudioProcessor::Project13AudioProcessor()
         &phaserDepthPercent,
         &phaserFeedBackPercent,
         &phaserMixPercent,
-        
 
+        &chorusRateHz,
+        &chorusCenterDelayMs,
+        &chorusDepthPercent,
+        &chorusFeedBackPercent,
+        &chorusMixPercent,
+         
     };
 
     auto floatNameFuncs = std::array
     {
         &getPhaserRateName,
-        &getPhaserCenterFreqName,
         &getPhaserDepthName,
+        &getPhaserCenterFreqName,
         &getPhaserFeedbackName,
-        &getPhaserMixName
+        &getPhaserMixName,
+
+        &getChorusDepthName,
+        &getChorusRateName,
+        &getChorusCenterDelayName,
+        &getChorusFeedbackName,
+        &getChorusMixName
 
     };
 
@@ -236,6 +247,45 @@ juce::AudioProcessorValueTreeState::ParameterLayout Project13AudioProcessor::cre
             Mix : 0 to 1
 
     */
+
+    name = getChorusRateName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(0.01f, 100.f, 0.01f, 1.f),
+        0.2f,
+        "HZ"));
+
+    name = getChorusDepthName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(0.01f, 1.0f, 0.01f, 1.f),
+        0.05f,
+        "%"));
+
+    name = getChorusCenterDelayName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(1.f, 100.f, 0.1f, 1.f),
+        7.f,
+        "ms"));
+
+    name = getChorusFeedbackName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(-1.f, 1.f, 0.01f, 1.f),
+        0.0f,
+        "%"));
+    name = getPhaserMixName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(0.01f, 1.0f, 0.01f, 1.f),
+        0.05f,
+        "%"));
 
 
 
