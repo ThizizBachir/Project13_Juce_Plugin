@@ -144,7 +144,54 @@ void Project13AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    auto newDSPOrder = DSP_Order();
+    
+    //try to pull
+    while (dspOrderFifo.pull(newDSPOrder)) {
 
+    }
+
+    //if you pulled , replqce dspOrder
+    if (newDSPOrder != DSP_Order()) 
+        dspOrder = newDSPOrder;
+
+    // now cover to pointers
+    DSP_Pointers dspPointers;
+
+
+    for (size_t i = 0; i < dspPointers.size(); ++i) {
+
+        switch(dspOrder[i])
+        {
+        case DSP_Option::Phase:
+            dspPointers[i] = &phaser;
+            break;
+        case DSP_Option::Chorus:
+            dspPointers[i] = &chorus;
+            break;
+        case DSP_Option::LadderFilter:
+            dspPointers[i] = &ladderFilter;
+            break;
+        case DSP_Option::Overdrive:
+            dspPointers[i] = &overdrive;
+            break;
+        case DSP_Option::END_OF_LIST:
+            jassertfalse;
+            break;
+        }
+    }
+
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+
+    for(int i =0; i<dspPointers.size() ; ++i) {
+        if(dspPointers[i] != nullptr)
+        {
+            dspPointers[i]->process(context);
+        }
+    }
+
+    
 }
 
 //==============================================================================

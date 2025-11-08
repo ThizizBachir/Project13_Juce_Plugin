@@ -55,6 +55,8 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+
+
     enum DSP_Option {
         Phase,
         Chorus,
@@ -64,6 +66,7 @@ public:
     };
 
     using DSP_Order = std::array < DSP_Option, static_cast<size_t>(DSP_Option::END_OF_LIST)>;
+
     SimpleMBComp::Fifo < DSP_Order > dspOrderFifo;
 
 private:
