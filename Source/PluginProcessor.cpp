@@ -1,4 +1,4 @@
-/*
+﻿/*
   ==============================================================================
 
     This file contains the basic framework code for a JUCE plugin processor.
@@ -43,6 +43,25 @@ auto getLadderFilterChoices()
     };
     
 }
+
+auto getGeneralFilterModeName() { return juce::String("General Filter Mode"); }
+auto getGeneralFilterFreqName() { return juce::String("General Filter Freq Hz"); }
+auto getGeneralFilterQualityName() { return juce::String("General Filter Quality"); }
+auto getGeneralFilterGainName() { return juce::String("General Filter Gain"); }
+
+auto getGeneralFilterChoices() 
+{
+    return juce::StringArray
+    {
+        "Peak",
+        "bandpass",
+        "notch",
+        "allpass",
+
+    };
+
+}
+
 //==============================================================================
 Project13AudioProcessor::Project13AudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -76,6 +95,10 @@ Project13AudioProcessor::Project13AudioProcessor()
         &ladderFilterCutoff,
         &ladderFilterResonance,
         &ladderFilterDrive,
+
+        &generalFilterFreqHz,
+        &generalFilterQuality,
+        &generalFilterGain,
          
     };
 
@@ -99,6 +122,10 @@ Project13AudioProcessor::Project13AudioProcessor()
         &getLadderFilterResonanceName,
         &getLadderFilterDriveName,
 
+        &getGeneralFilterFreqName,
+        &getGeneralFilterQualityName,
+        &getGeneralFilterGainName,
+
     };
 
     for (size_t i = 0; i < floatParams.size(); ++i)
@@ -109,8 +136,29 @@ Project13AudioProcessor::Project13AudioProcessor()
 
     }
 
-    ladderFilterMode = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(getLadderFilterModeName()));
-    jassert(ladderFilterMode != nullptr);
+
+    auto choiceParams = std::array
+    {
+        &ladderFilterMode,
+        &generalFilterMode,
+
+    };
+
+    auto choiceNameFuncs = std::array
+    {
+        &getLadderFilterModeName,
+        &getGeneralFilterModeName,
+    };
+
+    for (size_t i = 0; i < choiceParams.size(); ++i)
+    {
+        auto ptrToParamPtr = choiceParams[i];
+        *ptrToParamPtr = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(choiceNameFuncs[i]()));
+        jassert(*ptrToParamPtr != nullptr);
+
+    }
+
+
 
 
 }
@@ -381,6 +429,48 @@ juce::AudioProcessorValueTreeState::ParameterLayout Project13AudioProcessor::cre
         ""));
 
 
+    /*
+    general filter:
+    https://docs.juce.com/develop/structdsp_1_1IIR_1_1Coefficients.html
+    Mode: Peak, bandpass, notch, allpass,
+    freq: 20hz 20,000hz in 1hz steps
+    Q: 0.1 10 in 0.05 steps❘ 
+    gain: -24db to +24db in 0.5db increments
+    */
+
+    name = getGeneralFilterModeName();
+    choices = getGeneralFilterChoices();
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        choices,
+        0));
+
+    name = getGeneralFilterFreqName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        750.f,
+        "Hz"));
+
+    name = getGeneralFilterQualityName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
+        1.f,
+        ""));
+
+    name = getGeneralFilterGainName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name,versionHint },
+        name,
+        juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+        0.0f,
+        "dB"));
+
+
 
 
     return layout;
@@ -403,7 +493,7 @@ void Project13AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
 
     //[DONE]: add APVTs
-    //TODO: create audio parameters for all dsp choices
+    //[DONE]: create audio parameters for all dsp choices
     //TODO: update audio here from audio parameters
     //TODO: save / load settings
     //TODO: save / load DSP Order
@@ -443,6 +533,9 @@ void Project13AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
             break;
         case DSP_Option::Overdrive:
             dspPointers[i] = &overdrive;
+            break;
+        case DSP_Option::GeneralFilter:
+            dspPointers[i] = &generalFilter;
             break;
         case DSP_Option::END_OF_LIST:
             jassertfalse;
