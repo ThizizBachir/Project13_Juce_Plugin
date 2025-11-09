@@ -385,7 +385,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Project13AudioProcessor::cre
         juce::NormalisableRange<float>(-1.f, 1.f, 0.01f, 1.f),
         0.0f,
         "%"));
-    name = getPhaserMixName();
+    name = getChorusMixName();
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name,versionHint },
         name,
@@ -516,12 +516,35 @@ void Project13AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     //[DONE]: create audio parameters for all dsp choices
     //[DONE]: prepare all DSP
     //[DONE]: save / load settings
-    //TODO: update audio here from audio parameters
+    //[Done]: update dsp here from audio parameters
+    //TODO: update smoothers for all param update
+    //TODO: update General Filter Corrections
     //TODO: save / load DSP Order
     //TODO: drag-to-reorder GUI 
     //TODO: GUI design for each DSP instance
     //TODO: metering
     //TODO: [Bonuses]
+
+
+
+    phaser.dsp.setRate(phaserRateHz->get());
+    phaser.dsp.setDepth(phaserDepthPercent->get());
+    phaser.dsp.setCentreFrequency(phaserCenterFreqHz->get());
+    phaser.dsp.setFeedback(phaserFeedBackPercent->get());
+    phaser.dsp.setMix(phaserMixPercent->get());
+
+    chorus.dsp.setRate(chorusRateHz->get());
+    chorus.dsp.setDepth(chorusDepthPercent->get());
+    chorus.dsp.setCentreDelay(chorusCenterDelayMs->get());
+    chorus.dsp.setFeedback(chorusFeedBackPercent->get());
+    chorus.dsp.setMix(chorusMixPercent->get());
+
+    overdrive.dsp.setDrive(overdriveSaturation->get());
+  
+    ladderFilter.dsp.setMode(static_cast<juce::dsp::LadderFilterMode>(ladderFilterMode->getIndex()));
+    ladderFilter.dsp.setCutoffFrequencyHz(ladderFilterCutoff->get());
+    ladderFilter.dsp.setResonance(ladderFilterResonance->get());
+    ladderFilter.dsp.setDrive(ladderFilterDrive->get());
 
     auto newDSPOrder = DSP_Order();
     
