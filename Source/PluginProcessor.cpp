@@ -172,6 +172,31 @@ Project13AudioProcessor::Project13AudioProcessor()
 
     }
 
+    auto bypassParams = std::array
+    {
+        &phaserBypass,
+        &chorusBypass,
+        &overdriveBypass,
+        &ladderFilterBypass,
+        &generalFilterBypass
+
+    };
+
+    auto bypassNameFuncs = std::array
+    {
+        &getPhaserBypassName,
+        &getChorusBypassName,
+        &getOverdriveBypassName,
+        &getLadderFilterBypassName,
+        &getGeneralFilterBypassName,
+    };
+
+    for (size_t i = 0; i < bypassParams.size(); ++i)
+    {
+        auto ptrToParamPtr = bypassParams[i];
+        *ptrToParamPtr = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter(bypassNameFuncs[i]()));
+        jassert(*ptrToParamPtr != nullptr);
+    }
 
 
 
@@ -559,6 +584,7 @@ void Project13AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     //[DONE]: prepare all DSP
     //[DONE]: save / load settings
     //[Done]: update dsp here from audio parameters
+    // [Done]: bypass Param for each DSP elements
     //TODO: update smoothers for all param update
     //TODO: update General Filter Corrections
     //TODO: filters are mono not stereo
